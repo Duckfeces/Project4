@@ -1,0 +1,176 @@
+import urllib.parse
+import requests
+from tabulate import tabulate
+
+main_api = "https://www.mapquestapi.com/directions/v2/route?"
+key = "lM0Ws0jAdViYuHweNA4rsOfIWwMaLkA7"
+print("type 1 for Miles and 2 for Metric System")
+distanceType = input("Miles or Metric System")
+inputStart = []
+inputDestination = []
+startCount = 0
+destCount = 0
+headers = ["Narration","Distance"]
+headers2 = ["Start", "Destination"]
+narrate = []
+distance = []
+tryDest = "Obando"
+tryStart = "Malabon"
+narrateCount = 0
+if distanceType == '1':
+    while True:
+        narrate = []
+        distance = []
+        orig = input("Starting Location: ")
+        if orig == "quit" or orig == "q":
+            break
+        elif orig == "history" or orig == "h":
+            table = zip(inputStart, inputDestination)
+            print(tabulate(table, headers = headers2, tablefmt = "fancy_grid"))
+        else:
+            url = main_api + urllib.parse.urlencode({"key":key, "from":orig, "to":tryDest})
+            json_data = requests.get(url).json()
+            json_status = json_data["info"]["statuscode"]
+            while json_status != 0:
+                print("Input  incorrect please try again")
+                orig = input("Starting Location: ")
+                url = main_api + urllib.parse.urlencode({"key":key, "from":orig, "to":tryDest})
+                json_data = requests.get(url).json()
+                json_status = json_data["info"]["statuscode"]
+            startCount += 1
+            inputStart.insert(startCount,orig)
+        dest = input("Destination: ")
+        
+        if dest == "quit" or dest == "q":
+            break
+        elif dest == "history" or dest == "h":
+            table = zip(inputStart, inputDestination)
+            print(tabulate(table,headers = headers2, tablefmt = "fancy_grid"))
+            break
+        else:
+            url = main_api + urllib.parse.urlencode({"key":key, "from":tryStart, "to":dest})
+            json_data = requests.get(url).json()
+            json_status = json_data["info"]["statuscode"]
+            while json_status != 0:
+                print("Input  incorrect please try again")
+                dest = input("Destination: ")
+                url = main_api + urllib.parse.urlencode({"key":key, "from":tryStart, "to":dest})
+                json_data = requests.get(url).json()
+                json_status = json_data["info"]["statuscode"]
+            destCount += 1
+            inputDestination.insert(destCount,dest)
+        url = main_api + urllib.parse.urlencode({"key":key, "from":orig, "to":dest})
+        json_data = requests.get(url).json()
+        print("URL: " + (url))
+        json_data = requests.get(url).json()
+        json_status = json_data["info"]["statuscode"]
+        if json_status == 0:
+            print("API Status: " + str(json_status) + " = A successful route call.\n")
+            print("=============================================")
+            print("Directions from " + (orig) + " to " + (dest))
+            print("Trip Duration:   " + (json_data["route"]["formattedTime"]))
+            print("Kilometers:      " + str("{:.2f}".format((json_data["route"]["distance"])*1.61)))
+            print("Fuel Used (Ltr): " + str("{:.2f}".format((json_data["route"]["fuelUsed"])*3.78)))
+            print("=============================================")
+            for each in json_data["route"]["legs"][0]["maneuvers"]:
+                narrate.insert(narrateCount,each["narrative"])
+                distance.insert(narrateCount,"(" + str("{:.2f}".format((each["distance"])*1.61) + " km)"))
+                narrateCount += 1
+            table2 = zip(narrate, distance)
+            print(tabulate(table2,headers = headers, tablefmt = "fancy_grid"))
+            narrate.clear()
+            distance.clear()
+            narrateCount = 0
+            print("=============================================\n")
+        elif json_status == 402:
+            print("**********************************************")
+            print("Status Code: " + str(json_status) + "; Invalid user inputs for one or both locations.")
+            print("**********************************************\n")
+        elif json_status == 611:
+            print("**********************************************")
+            print("Status Code: " + str(json_status) + "; Missing an entry for one or both locations.")
+            print("**********************************************\n")
+        else:
+            print("************************************************************************")
+            print("For Staus Code: " + str(json_status) + "; Refer to:")
+            print("https://developer.mapquest.com/documentation/directions-api/status-codes")
+            print("************************************************************************\n")
+
+elif distanceType == '2':
+   while True:
+        narrate = []
+        distance = []
+        orig = input("Starting Location: ")
+        if orig == "quit" or orig == "q":
+            break
+        elif orig == "history" or orig == "h":
+            table = zip(inputStart, inputDestination)
+            print(tabulate(table, headers = headers2, tablefmt = "fancy_grid"))
+        else:
+            url = main_api + urllib.parse.urlencode({"key":key, "from":orig, "to":tryDest})
+            json_data = requests.get(url).json()
+            json_status = json_data["info"]["statuscode"]
+            while json_status != 0:
+                print("Input  incorrect please try again")
+                orig = input("Starting Location: ")
+                url = main_api + urllib.parse.urlencode({"key":key, "from":orig, "to":tryDest})
+                json_data = requests.get(url).json()
+                json_status = json_data["info"]["statuscode"]
+            startCount += 1
+            inputStart.insert(startCount,orig)
+        dest = input("Destination: ")
+        
+        if dest == "quit" or dest == "q":
+            break
+        elif dest == "history" or dest == "h":
+            table = zip(inputStart, inputDestination)
+            print(tabulate(table,headers = headers2, tablefmt = "fancy_grid"))
+            break
+        else:
+            url = main_api + urllib.parse.urlencode({"key":key, "from":orig, "to":tryDest})
+            json_data = requests.get(url).json()
+            json_status = json_data["info"]["statuscode"]
+            while json_status != 0:
+                print("Input  incorrect please try again")
+                orig = input("Starting Location: ")
+                url = main_api + urllib.parse.urlencode({"key":key, "from":tryStart, "to":dest})
+                json_data = requests.get(url).json()
+                json_status = json_data["info"]["statuscode"]
+            destCount += 1
+            inputDestination.insert(destCount,dest)
+        url = main_api + urllib.parse.urlencode({"key":key, "from":orig, "to":dest})
+        json_data = requests.get(url).json()
+        print("URL: " + (url))
+        json_data = requests.get(url).json()
+        json_status = json_data["info"]["statuscode"]
+        if json_status == 0:
+            print("API Status: " + str(json_status) + " = A successful route call.\n")
+            print("=============================================")
+            print("Directions from " + (orig) + " to " + (dest))
+            print("Trip Duration:   " + (json_data["route"]["formattedTime"]))
+            print("Miles:      " + str("{:.2f}".format((json_data["route"]["distance"]))))
+            print("Fuel Used (Ltr): " + str("{:.2f}".format((json_data["route"]["fuelUsed"])*3.78)))
+            print("=============================================")
+            for each in json_data["route"]["legs"][0]["maneuvers"]:
+                narrate.insert(narrateCount,each["narrative"])
+                distance.insert(narrateCount,"(" + str("{:.2f}".format((each["distance"])) + " miles)"))
+                narrateCount += 1
+            table2 = zip(narrate, distance)
+            print(tabulate(table2,headers = headers, tablefmt = "fancy_grid"))
+            narrate.clear()
+            distance.clear()
+            narrateCount = 0
+            print("=============================================\n")
+        elif json_status == 402:
+            print("**********************************************")
+            print("Status Code: " + str(json_status) + "; Invalid user inputs for one or both locations.")
+            print("**********************************************\n")
+        elif json_status == 611:
+            print("**********************************************")
+            print("Status Code: " + str(json_status) + "; Missing an entry for one or both locations.")
+            print("**********************************************\n")
+        else:
+            print("************************************************************************")
+            print("For Staus Code: " + str(json_status) + "; Refer to:")
+            print("https://developer.mapquest.com/documentation/directions-api/status-codes")
+            print("************************************************************************\n")
